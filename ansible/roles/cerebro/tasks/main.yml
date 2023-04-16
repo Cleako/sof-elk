@@ -3,6 +3,7 @@
   yum:
     name: '{{ cerebro_rpm_url }}'
     state: present
+    disable_gpg_check: yes
   tags: sof-elk_cerebro
 
 - name: Set Cerebro directory permissions

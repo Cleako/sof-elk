@@ -21,4 +21,5 @@
   yum:
     name: '{{ powershell_yum_packages }}'
     state: present
+    disable_gpg_check: yes
   tags: powershell

@@ -1,0 +1,146 @@
+Install CentOS Stream 9
+
+Learn how to install EPEL and RPM Fusion Repository for CentOS Stream 9:
+https://tutorialforlinux.com/2022/08/05/how-to-add-rpm-fusion-repository-on-centos-stream-9-2/
+
+
+Commands from the tutorial above:
+-------------------------------------------
+```
+sudo dnf install --nogpgcheck https://dl.fedoraproject.org/pub/epel/epel-release-latest-$(rpm -E %rhel).noarch.rpm
+wget --no-check-certificate https://mirrors.rpmfusion.org/free/el/rpmfusion-free-release-$(rpm -E %rhel).noarch.rpm
+wget --no-check-certificate https://mirrors.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-$(rpm -E %rhel).noarch.rpm
+sudo dnf install --nogpgcheck ./rpmfusion*.rpm
+sudo reboot
+sudo rpm -v --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
+sudo rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm
+sudo yum install exfat-utils fuse-exfat -y
+```
+
+Now clone SOF-ELK:
+--------------------------------
+```
+git clone https://github.com/philhagen/sof-elk.git
+cd sof-elk
+```
+
+Edit `ansible/sof-elk_single_vm.yml` and comment out section with this # as shown below:
+```
+#pre_tasks:
+    #- name: "Get current git branch"
+      #command: "git rev-parse --abbrev-ref HEAD"
+      #args:
+        #chdir: "{{ playbook_dir }}"
+      #register: git_branch_result
+      #check_mode: no
+      #delegate_to: 127.0.0.1
+    #- set_fact:
+        #git_branch: "{{ git_branch_result.stdout }}"
+```
+
+Also comment out the two sections in the same file since we don't use CentOS 7 and use our own EPEL and RPM Fusion Repo for CentOS Stream 9:
+```
+  roles:
+    #- epel_repo
+    #- rpmfusion_repo
+```
+
+Edit `ansible/roles/sof-elk_base/defaults/main.yml` and comment out the entries as shown below:
+```
+  #- geoIP
+  #- deltarpm
+  #- python2-pip
+  #- python36-six
+  #- yum-plugin-post-transaction-actions
+```
+
+Replace the geoIP entry in the same file with this:
+```
+  - https://github.com/maxmind/geoipupdate/releases/download/v5.0.3/geoipupdate_5.0.3_linux_386.rpm
+```
+
+Edit `ansible/roles/sof-elk_base/tasks/main.yml` and insert `disable_gpg _check: yes` as shown:
+```
+- name: Install core RPM set via YUM
+  yum:
+    name: '{{ base_yum_packages }}'
+    state: present
+    disable_gpg_check: yes
+  tags: sof-elk_base
+  
+- name: Install VMware-specific RPM set if installing to VMware guest
+  yum:
+    name: '{{ vmware_yum_packages }}'
+    state: present
+    disable_gpg_check: yes
+  tags: sof-elk_base
+  when: ansible_virtualization_role == "guest" and ansible_virtualization_type == "VMware"
+```
+
+In the same file, search for and comment out the entire section:
+```
+#- name: Check out SOF-ELK repo
+  #git:
+    #repo: 'https://github.com/philhagen/sof-elk'
+    #dest: '/usr/local/sof-elk'
+    #version: "{{ git_branch }}"
+    #update: yes
+  #tags: sof-elk_base
+```
+
+Edit `ansible/roles/cerebro/tasks/main.yml` and insert `disable_gpg _check: yes` as shown:
+```
+- name: Install Cerebro RPM
+  yum:
+    name: '{{ cerebro_rpm_url }}'
+    state: present
+    disable_gpg_check: yes
+  tags: sof-elk_cerebro
+```
+
+Edit `ansible/roles/azure-cli/tasks/main.yml` and insert `disable_gpg _check: yes` as shown:
+```
+- name: Install Azure RPMs
+  yum:
+    name: '{{ azure_yum_packages }}'
+    state: present
+    disable_gpg_check: yes
+  tags: azure-cli
+```
+
+Edit `ansible/roles/gcp-cli/tasks/main.yml` and insert `disable_gpg _check: yes` as shown:
+```
+- name: Install Google Cloud RPMs
+  yum:
+    name: '{{ gcp_yum_packages }}'
+    state: present
+    disable_gpg_check: yes
+  tags: gcp-cli
+```
+
+Edit `ansible/roles/powershell/tasks/main.yml` and insert `disable_gpg _check: yes` as shown:
+```
+- name: Install Powershell RPMs
+  yum:
+    name: '{{ powershell_yum_packages }}'
+    state: present
+    disable_gpg_check: yes
+  tags: powershell
+```
+
+Now run these commands:
+```
+sudo yum update
+pip install geoip2
+python3 -m pip install --upgrade pip
+sudo mkdir /etc/yum/post-actions
+cd ~
+wget https://rpmfind.net/linux/centos-stream/9-stream/CRB/x86_64/os/Packages/python3-pygments-2.7.4-4.el9.noarch.rpm
+sudo rpm -i python3-pygments-2.7.4-4.el9.noarch.rpm
+sudo yum install azure-cli-2.38.0-4.el9.noarch -y
+```
+
+Lets go!
+```
+sudo ansible-playbook -i 127.0.0.1, --connection=local /usr/local/sof-elk/ansible/sof-elk_single_vm.yml
+```

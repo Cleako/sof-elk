@@ -29,4 +29,5 @@
   yum:
     name: '{{ gcp_yum_packages }}'
     state: present
+    disable_gpg_check: yes
   tags: gcp-cli

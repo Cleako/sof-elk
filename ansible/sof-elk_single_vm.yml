@@ -6,16 +6,16 @@
   become_method: sudo
   become_user: root
 
-  pre_tasks:
-    - name: "Get current git branch"
-      command: "git rev-parse --abbrev-ref HEAD"
-      args:
-        chdir: "{{ playbook_dir }}"
-      register: git_branch_result
-      check_mode: no
-      delegate_to: 127.0.0.1
-    - set_fact:
-        git_branch: "{{ git_branch_result.stdout }}"
+  #pre_tasks:
+    #- name: "Get current git branch"
+      #command: "git rev-parse --abbrev-ref HEAD"
+      #args:
+        #chdir: "{{ playbook_dir }}"
+      #register: git_branch_result
+      #check_mode: no
+      #delegate_to: 127.0.0.1
+    #- set_fact:
+        #git_branch: "{{ git_branch_result.stdout }}"
 
   vars_prompt:
     - name: disable_root
@@ -24,18 +24,20 @@
       private: no
     - name: geoip_accountid
       prompt: "Enter GeoIP Account ID (leave this and next two blank to skip GeoIP installation)"
+      default: 
       private: no
     - name: geoip_licensekey
       prompt:  "Enter GeoIP License Key (new 3.x+ format)"
+      default: 
       private: no
     - name: geoip_config_persist
       prompt: "Do you want GeoIP account/license data to persist after installation (default: no)?"
-      default: no
+      default: yes
       private: no
 
   roles:
-    - epel_repo
-    - rpmfusion_repo
+    #- epel_repo
+    #- rpmfusion_repo
     - elastic_repo
     - sof-elk_base
     - elasticsearch

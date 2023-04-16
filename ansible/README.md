@@ -1,4 +1,4 @@
-# SOF-ELK Classroom VM Preparation Steps
+# SOF-ELK VM Preparation Steps
 
 These are the steps used to create a SOF-ELK instance as used in the FOR572 courseware.  These steps may be a good starting point for those wishing to deploy their own SOF-ELK capabilities across multiple systems via the included Ansible playbooks.
 
@@ -16,13 +16,11 @@ These are the steps used to create a SOF-ELK instance as used in the FOR572 cour
     * 500GB SATA HDD, single file, named `FOR572 SOF-ELK.vmdk`
     * Three IDE CD/DVD-ROM devices. Disable the two that are not attached to the installer ISO.
     * Disable Side Channel Mitigations
-2. CentOS 7 network install
-    * I had to append `vga=794` to the kernel command line or the windows got cut off
+2. CentOS Stream 9 install
     * Enable networking (DHCP)
     * Hostname: `sof-elk`
     * Timezone: `Etc/Coordinated Universal Time` (**NOT GMT**), network time enabled
-    * Install via network, URL: `http://mirrors.sonic.net/centos/7/os/x86_64/`
-    * Software selection: Minimal
+    * Install URL: `https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/`
     * Installation destination: ~500GB HDD, but select "I will configure partitions"
         * Click "Click here to create them automatically"
         * Change `/home` to 200GB

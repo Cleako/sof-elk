@@ -22,20 +22,22 @@
 
 - name: Clear YUM cache
   command: 'yum clean all'
-  args:
-    warn: false
+  #args:
+    #warn: false
   tags: sof-elk_base
 
 - name: Install core RPM set via YUM
   yum:
     name: '{{ base_yum_packages }}'
     state: present
+    disable_gpg_check: yes
   tags: sof-elk_base
 
 - name: Install VMware-specific RPM set if installing to VMware guest
   yum:
     name: '{{ vmware_yum_packages }}'
     state: present
+    disable_gpg_check: yes
   tags: sof-elk_base
   when: ansible_virtualization_role == "guest" and ansible_virtualization_type == "VMware"
 
@@ -157,13 +159,13 @@
     state: directory
   tags: sof-elk_base
 
-- name: Check out SOF-ELK repo
-  git:
-    repo: 'https://github.com/philhagen/sof-elk'
-    dest: '/usr/local/sof-elk'
-    version: "{{ git_branch }}"
-    update: yes
-  tags: sof-elk_base
+#- name: Check out SOF-ELK repo
+  #git:
+    #repo: 'https://github.com/philhagen/sof-elk'
+    #dest: '/usr/local/sof-elk'
+    #version: "{{ git_branch }}"
+    #update: yes
+  #tags: sof-elk_base
 
 - name: set git clone post-merge hook
   copy:
